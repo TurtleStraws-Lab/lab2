@@ -156,7 +156,6 @@ void X11_wrapper::reshape_window(int width, int height)
 	//Window has been resized.
 	g.xres = width;
 	g.yres = height;
-	//
 	glViewport(0, 0, (GLint)width, (GLint)height);
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
@@ -172,7 +171,14 @@ void X11_wrapper::check_resize(XEvent *e)
 	XConfigureEvent xce = e->xconfigure;
 	if (xce.width != g.xres || xce.height != g.yres) {
 		//Window size did change.
-		reshape_window(xce.width, xce.height);
+        reshape_window(xce.width, xce.height);
+        if(xce.width <= 600){
+        glColor3ub(0, 150, 220);
+        }
+        if(xce.width >= 400){
+        glColor3ub(220, 150, 220);
+        }
+        
 	}
 }
 //-----------------------------------------------------------------------------
@@ -225,7 +231,7 @@ int X11_wrapper::check_keys(XEvent *e)
 		switch (key) {
 			case XK_a:
 				//the 'a' key was pressed
-	    glColor3ub(240, 150, 220);
+	    glColor3ub(0, 150, 220);
 				break;
 			case XK_Escape:
 				//Escape key was pressed
@@ -268,17 +274,21 @@ void physics()
 
 void render()
 {
-
-	//clear the window
-	glClear(GL_COLOR_BUFFER_BIT);
+    
+    
+    
+    
+    
+    
+    glClear(GL_COLOR_BUFFER_BIT); // clear the window
 	//draw the box
 	glPushMatrix();
 	glTranslatef(g.pos[0], g.pos[1], 0.0f);
 	glBegin(GL_QUADS);
-		glVertex2f(-g.w, -g.w);
+		glVertex2f(-g.w, -g.w);// first two negative first of second negative
 		glVertex2f(-g.w,  g.w);
 		glVertex2f( g.w,  g.w);
-		glVertex2f( g.w, -g.w);
+		glVertex2f( g.w, -g.w); //if negative removed makes triangle
 	glEnd();
 	glPopMatrix();
 }
