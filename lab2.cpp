@@ -9,6 +9,9 @@
 //This program needs some refactoring.
 //We will do this in class together.
 //
+//to do list
+//1/31/2025
+//
 //
 #include <iostream>
 #include <ctime>
@@ -21,7 +24,7 @@ using namespace std;
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <GL/glx.h>
-
+#include "fonts.h"
 //some structures
 
 class Global {
@@ -37,7 +40,7 @@ public:
     dir = 30.0f;
     pos[0] = 0.0f+w;
     pos[1] = yres/2.0f;
-    }
+ }
 } g;
 
 class X11_wrapper {
@@ -68,14 +71,25 @@ int main()
 {
 	init_opengl();
 	int done = 0;
+    
 	//main game loop
 	while (!done) {
 		//look for external events such as keyboard, mouse.
 		while (x11.getXPending()) {
-			XEvent e = x11.getXNextEvent();
+			
+            int a, b, c;
+            a = 0;
+            b = 0; 
+            c = 255;
+            XEvent e = x11.getXNextEvent();
 			x11.check_resize(&e);
 			x11.check_mouse(&e);
 			done = x11.check_keys(&e);
+            if(g.xres > 100){
+            
+	        glColor3ub(a, b ,c);
+            c = c - 20;
+            }
 		}
 		physics();
 		render();
@@ -129,7 +143,7 @@ void X11_wrapper::set_title()
 {
 	//Set the window title bar.
 	XMapWindow(dpy, win);
-	XStoreName(dpy, win, "3350 Lab-1");
+	XStoreName(dpy, win, "3350 Lab-1, Esc to exit");
 }
 
 bool X11_wrapper::getXPending()
@@ -160,26 +174,27 @@ void X11_wrapper::reshape_window(int width, int height)
 	glMatrixMode(GL_PROJECTION); glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW); glLoadIdentity();
 	glOrtho(0, g.xres, 0, g.yres, -1, 1);
+
 }
 
 void X11_wrapper::check_resize(XEvent *e)
 {
-	//The ConfigureNotify is sent by the
+	
+    //The ConfigureNotify is sent by the
 	//server if the window is resized.
-	if (e->type != ConfigureNotify)
-		return;
+	if (e->type != ConfigureNotify){
+        return;
+    }
 	XConfigureEvent xce = e->xconfigure;
 	if (xce.width != g.xres || xce.height != g.yres) {
 		//Window size did change.
         reshape_window(xce.width, xce.height);
-        if(xce.width <= 600){
-        glColor3ub(0, 150, 220);
-        }
-        if(xce.width >= 400){
-        glColor3ub(220, 150, 220);
-        }
+
+    
+
+}
         
-	}
+	
 }
 //-----------------------------------------------------------------------------
 
@@ -224,14 +239,13 @@ void X11_wrapper::check_mouse(XEvent *e)
 
 int X11_wrapper::check_keys(XEvent *e)
 {
-	if (e->type != KeyPress && e->type != KeyRelease)
+    if (e->type != KeyPress && e->type != KeyRelease)
 		return 0;
 	int key = XLookupKeysym(&e->xkey, 0);
 	if (e->type == KeyPress) {
 		switch (key) {
 			case XK_a:
 				//the 'a' key was pressed
-	    glColor3ub(0, 150, 220);
 				break;
 			case XK_Escape:
 				//Escape key was pressed
@@ -252,8 +266,11 @@ void init_opengl(void)
 	glOrtho(0, g.xres, 0, g.yres, -1, 1);
 	//Set the screen background color
 	glClearColor(0.1, 0.1, 0.1, 1.0);
-}
 
+
+glEnable(GL_TEXTURE_2D);
+initialize_fonts();
+}
 void physics()
 {
 	g.pos[0] += g.dir;
@@ -274,12 +291,6 @@ void physics()
 
 void render()
 {
-    
-    
-    
-    
-    
-    
     glClear(GL_COLOR_BUFFER_BIT); // clear the window
 	//draw the box
 	glPushMatrix();
@@ -291,8 +302,15 @@ void render()
 		glVertex2f( g.w, -g.w); //if negative removed makes triangle
 	glEnd();
 	glPopMatrix();
-}
+ Rect r;
+     r.bot = g.yres - 20;
+     r.left = 10;
+     r.center = 0;
+     ggprint8b(&r, 16, 0x00ff0000, "3350 - Asteroids");
+     ggprint8b(&r, 16, 0x00ffff00, "n bullets: ");
+     ggprint8b(&r, 16, 0x00ffff00, "n asteroids: ");
 
+}
 
 
 
