@@ -33,13 +33,17 @@ public:
     float w;
     float dir;
     float pos[2];
+    int a, b, c;
  Global() {
     xres = 400;
     yres = 200;
-    w = 20.0f;
+    w = 25.0f;
     dir = 30.0f;
     pos[0] = 0.0f+w;
-    pos[1] = yres/2.0f;
+    pos[1] = yres/2;
+    a = 0; 
+    b = 0;
+    c = 0;
  }
 } g;
 
@@ -77,25 +81,18 @@ int main()
 		//look for external events such as keyboard, mouse.
 		while (x11.getXPending()) {
 			
-            int a, b, c;
-            a = 0;
-            b = 0; 
-            c = 255;
             XEvent e = x11.getXNextEvent();
 			x11.check_resize(&e);
 			x11.check_mouse(&e);
 			done = x11.check_keys(&e);
-            if(g.xres > 100){
-            
-	        glColor3ub(a, b ,c);
-            c = c - 20;
-            }
 		}
+        
 		physics();
 		render();
 		x11.swapBuffers();
 		usleep(200);
-	}
+    }
+    cleanup_fonts();
 	return 0;
 }
 
@@ -111,7 +108,7 @@ X11_wrapper::~X11_wrapper()
 
 X11_wrapper::X11_wrapper()
 {
-	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None };
+	GLint att[] = { GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None }; //24 OG
 	int w = g.xres, h = g.yres;
 	dpy = XOpenDisplay(NULL);
 	if (dpy == NULL) {
@@ -189,12 +186,7 @@ void X11_wrapper::check_resize(XEvent *e)
 	if (xce.width != g.xres || xce.height != g.yres) {
 		//Window size did change.
         reshape_window(xce.width, xce.height);
-
-    
-
-}
-        
-	
+    }
 }
 //-----------------------------------------------------------------------------
 
@@ -245,8 +237,12 @@ int X11_wrapper::check_keys(XEvent *e)
 	if (e->type == KeyPress) {
 		switch (key) {
 			case XK_a:
+            g.dir = (g.dir/16) + g.dir;
 				//the 'a' key was pressed
 				break;
+            case XK_b:
+                g.dir = (-g.dir/16) + g.dir;
+                break;
 			case XK_Escape:
 				//Escape key was pressed
 				return 1;
@@ -278,41 +274,61 @@ void physics()
      if (g.pos[0] >= (g.xres-g.w)) {
          g.pos[0] = (g.xres-g.w);
          g.dir = -g.dir;
-     }
+	     glColor3ub(g.a, g.b ,g.c);
+        }
      if (g.pos[0] <= g.w) {
          g.pos[0] = g.w;
          g.dir = -g.dir;
+         if(g.a < 220){
+         g.a = g.a + 50;
+         if(g.c > 25){
+         g.c = g.c - 50;
+         } 
+	     glColor3ub(g.a, g.b ,g.c);
+            }
+     }
+     
+     if(g.xres > 275){
+        if(g.c < 220){
+         g.c = g.c + 50;
+         if(g.a > 25){
+         g.a = g.a - 50;
+        }
+       }
+	     glColor3ub(g.a, g.b ,g.c);
      }
 
-
-
-
 }
-
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT); // clear the window
 	//draw the box
-	glPushMatrix();
+	
+    if(g.xres > 30){
+    glPushMatrix();
 	glTranslatef(g.pos[0], g.pos[1], 0.0f);
 	glBegin(GL_QUADS);
-		glVertex2f(-g.w, -g.w);// first two negative first of second negative
+	    glVertex2f(-g.w, -g.w);// first two negative first of second negative
 		glVertex2f(-g.w,  g.w);
 		glVertex2f( g.w,  g.w);
-		glVertex2f( g.w, -g.w); //if negative removed makes triangle
+		glVertex2f( g.w, -g.w);  //if negative removed makes triangle
 	glEnd();
 	glPopMatrix();
- Rect r;
-     r.bot = g.yres - 20;
-     r.left = 10;
-     r.center = 0;
-     ggprint8b(&r, 16, 0x00ff0000, "3350 - Asteroids");
-     ggprint8b(&r, 16, 0x00ffff00, "n bullets: ");
-     ggprint8b(&r, 16, 0x00ffff00, "n asteroids: ");
+    }
+    
+    
+    Rect r;
+    r.bot = g.yres - 20;
+    r.left = 10;
+    r.center = 0;
+    ggprint8b(&r, 16, 0x00ff0000, "3350 - Box Bounce");
+    ggprint8b(&r, 16, 0x00ffff00, "A speed up: ");
+    ggprint8b(&r, 16, 0x00ffff00, "B slow down: ");
+    
 
+    
 }
 
 
-
-
-
+    
+    
