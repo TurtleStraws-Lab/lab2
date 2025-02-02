@@ -31,19 +31,22 @@ class Global {
 public:
 	int xres, yres;
     float w;
-    float dir;
+    float dir, dir2;
     float pos[2];
     int a, b, c;
+    int count;
  Global() {
     xres = 400;
     yres = 200;
     w = 25.0f;
-    dir = 30.0f;
+    dir = 20.0f;
+    dir2 = 10.0f;
     pos[0] = 0.0f+w;
     pos[1] = yres/2;
     a = 0; 
     b = 0;
     c = 0;
+    count = 0;
  }
 } g;
 
@@ -270,35 +273,53 @@ initialize_fonts();
 void physics()
 {
 	g.pos[0] += g.dir;
-    //No physics yet.
+	g.pos[1] += g.dir2;
+//no physics yet
      if (g.pos[0] >= (g.xres-g.w)) {
          g.pos[0] = (g.xres-g.w);
          g.dir = -g.dir;
-	     glColor3ub(g.a, g.b ,g.c);
+         g.count++;
         }
-     if (g.pos[0] <= g.w) {
+    if (g.pos[0] <= g.w) {
          g.pos[0] = g.w;
          g.dir = -g.dir;
-         if(g.a < 220){
-         g.a = g.a + 50;
-         if(g.c > 25){
-         g.c = g.c - 50;
-         } 
-	     glColor3ub(g.a, g.b ,g.c);
-            }
-     }
-     
-     if(g.xres > 275){
-        if(g.c < 220){
-         g.c = g.c + 50;
-         if(g.a > 25){
-         g.a = g.a - 50;
-        }
-       }
-	     glColor3ub(g.a, g.b ,g.c);
-     }
+         g.count++;
+    }
+        if (g.pos[1] >= (g.yres-g.w)) {
+         g.pos[1] = (g.yres-g.w);
+         g.dir2 = -g.dir2; 
+         g.count++;}
 
+       if(g.pos[1] <= g.w){
+        g.pos[1] = g.w;
+        g.dir2 = -g.dir2; 
+         g.count++;}
+
+       if (g.xres < 250) {
+        if(g.a < 225){   
+        g.a = g.a + (5 * g.count);
+        }
+        if(g.c > 25){
+        g.c = g.c - (5 * g.count);
+        }
+        glColor3ub(g.a,g.b,g.c);
+        
+       }
+        if(g.xres > 275){
+        if(g.c < 225 ){ 
+        g.c = g.c + (5 * g.count);
+        }
+        if(g.a > 25){
+        g.a = g.a - (5 * g.count);
+        }
+        glColor3ub(g.a,g.b,g.c);
+        
+       }
+        
 }
+
+
+
 void render()
 {
     glClear(GL_COLOR_BUFFER_BIT); // clear the window
